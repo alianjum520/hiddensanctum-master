@@ -88,44 +88,48 @@ def profile_management(request):
 def checkout(request,pk):
     """This is the checkout page that will tell us which plan the user opt"""
 
-    plans = Plan.objects.get(id=pk)
-    if plans.price != 0:
-        try:
-            membership = Membership.objects.get(user = request.user)
-            membership.plans = plans
-            membership.save()
-            context = {
-                'plans':plans,
-                'membership':membership
-            }
-            return render(request, 'vpn/checkout_view.html', context)
+    if request.user.is_authenticated:
+        plans = Plan.objects.get(id=pk)
+        if plans.price != 0:
+            try:
+                membership = Membership.objects.get(user = request.user)
+                membership.plans = plans
+                membership.save()
+                context = {
+                    'plans':plans,
+                    'membership':membership
+                }
+                return render(request, 'vpn/checkout_view.html', context)
 
-        except Membership.DoesNotExist:
-            membership = Membership.objects.create(
-            user = request.user,
-            )
-            context = {
-                'plans':plans,
-                'membership':membership
-            }
-            return render(request, 'vpn/checkout_view.html', context)
+            except Membership.DoesNotExist:
+                membership = Membership.objects.create(
+                user = request.user,
+                )
+                context = {
+                    'plans':plans,
+                    'membership':membership
+                }
+                return render(request, 'vpn/checkout_view.html', context)
+        else:
+            try:
+                membership = Membership.objects.get(user = request.user)
+                membership.plans = plans
+                membership.save()
+                return render(request,'vpn/profile.html')
+
+            except Membership.DoesNotExist:
+                membership = Membership.objects.create(
+                user = request.user,
+                plans = plans
+                )
+                context = {
+                    'plans':plans,
+                    'membership':membership
+                }
+                return render(request,'vpn/profile.html',context)
     else:
-        try:
-            membership = Membership.objects.get(user = request.user)
-            membership.plans = plans
-            membership.save()
-            return render(request,'vpn/profile.html')
-
-        except Membership.DoesNotExist:
-            membership = Membership.objects.create(
-            user = request.user,
-            plans = plans
-            )
-            context = {
-                'plans':plans,
-                'membership':membership
-            }
-            return render(request,'vpn/profile.html',context)
+        messages.error(request, "Please Login to choose the plans")
+        return redirect('sign-in')
 
 
 class CreateCheckoutSession(View):
