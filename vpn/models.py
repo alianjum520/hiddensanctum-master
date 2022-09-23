@@ -46,6 +46,7 @@ class Server(models.Model):
 	server_password = models.CharField(max_length=100)
 	flag_code = models.CharField(max_length=50, blank=False, null=False)
 	premium_server = models.BooleanField(default=False)
+	created_at = models.DateTimeField(auto_now_add=True)
 
 	def __str__(self):
 		return self.server_name
