@@ -73,18 +73,17 @@ def logoutUser(request):
     return redirect('sign-in')
 
 
+@login_required(login_url='sign-in')
 def profile_management(request):
-    user = request.user
-    user_details = User.objects.get(username = user)
-    membership = Membership.objects.get(user = user)
+    fname = request.user
+    email = request.user.email
     context = {
-        "user": user,
-        "user_details": user_details,
-        "membership": membership
+        'fname': fname,
+        'email': email,
     }
-    return render(request, 'vpn/profile.html', context)
+    return render(request, 'vpn/dashboard.html', context)
 
-
+@login_required(login_url='sign-in')
 def checkout(request,pk):
     """This is the checkout page that will tell us which plan the user opt"""
 
@@ -173,7 +172,7 @@ def payment_succes(request):
 
 def payment_cancel(request):
     """If the Payment is cancel or some issue happens user will be directed to this page"""
-    
+
     return render(request,'vpn/cancel.html')
 
 

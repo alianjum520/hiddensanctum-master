@@ -20,12 +20,12 @@
               <li><i class="bx bx-check"></i> {{plans.feature_three}}</li>
               <li><i class="bx bx-check"></i> <span>{{plans.feature_four}}</span></li>
             </ul>
-            <div>
-            <form action="{% url 'create-checkout-session' %}" method="POST" >
+            <form id="checkout-btn" action="{% url 'create-checkout-session' %}" method="POST" >
               {% csrf_token %}
               <input type="hidden" name="vpn-id" value="{{membership.id}}"></input>
               <button type="submit" id="checkout-button" >Checkout</button>
             </form>
+            <div>
             <div>
           </div>
         </div>
