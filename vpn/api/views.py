@@ -3,23 +3,18 @@ from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from django.contrib.auth import login,logout
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from vpn.models import Server
-
-class UserData(APIView):
-
-    def get(self, request, format=None):
-        user = User.objects.all()
-        serializer = UserSerializer(user, many=True)
-        return Response(serializer.data, status = status.HTTP_200_OK)
 
 
 class SignUpUser(CreateAPIView):
 
     serializer_class = SignUpSerializer
     queryset = User.objects.all()
+    permission_classes = [AllowAny]
 
     def post(self,request):
 
@@ -32,10 +27,12 @@ class SignUpUser(CreateAPIView):
 
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
-class LoginView(CreateAPIView):
+
+class LoginView(APIView):
 
     serializer_class = LoginUserSerializer
     permission_classes = [AllowAny]
+
 
     def post(self, request, format=None):
 
@@ -45,6 +42,12 @@ class LoginView(CreateAPIView):
         user = serializer.validated_data['user']
         login(request, user)
         return Response(None, status=status.HTTP_202_ACCEPTED)
+
+    def get(self, request):
+        queryset = User.objects.all()
+        user = get_object_or_404(queryset, username = request.user)
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status = status.HTTP_200_OK)
 
 
 class LogOutView(APIView):

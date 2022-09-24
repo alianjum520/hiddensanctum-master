@@ -168,19 +168,13 @@ class CreateCheckoutSession(View):
 def payment_succes(request):
     """After the payment is successfully done user will redirected to success page"""
 
-    context ={
-        'payment_status':'success'
-    }
-    return render(request,'vpn/success.html',context)
+    return render(request,'vpn/success.html')
 
 
 def payment_cancel(request):
     """If the Payment is cancel or some issue happens user will be directed to this page"""
-
-    context ={
-        'payment_status':'cancel'
-    }
-    return render(request,'vpn/cancel.html',context)
+    
+    return render(request,'vpn/cancel.html')
 
 
 #The endpoint_secret gets the webhook secret key of strip from the settings(global variable)
@@ -206,6 +200,8 @@ def my_webhook_view(request):
         if session.payment_status == "paid":
             line_item = session.list_line_items(session.id, limit=1).data[0]
             member_id = line_item['description']
+            print(line_item)
+            print(session.payment_status)
             # Fulfill the purchase...
             fulfill_order(member_id)
         elif session.payment_status == "unpaid":
@@ -222,7 +218,7 @@ def fulfill_order(member_id):
     date_object = datetime.date.today()
     membership =Membership.objects.get(sluged = member_id)
     month_after = date_object + relativedelta(months=+membership.plans.plan_duration_months)
-    membership.premium = True
+    membership.premium_membership = True
     membership.payment_completed = True
     membership.subscription_date = date_object
     membership.expiration_data = month_after
@@ -231,7 +227,7 @@ def fulfill_order(member_id):
 
 def fail_payment(member_id):
     """
-    On failure of payment the member who is created will be deleted
+    On failure of payment the member(Model) who is being created will be deleted
     he/she have to do payment again
     """
     membership =Membership.objects.get(sluged = member_id)
