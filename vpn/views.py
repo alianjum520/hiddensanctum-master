@@ -104,6 +104,7 @@ def checkout(request,pk):
             except Membership.DoesNotExist:
                 membership = Membership.objects.create(
                 user = request.user,
+                plans = plans
                 )
                 context = {
                     'plans':plans,

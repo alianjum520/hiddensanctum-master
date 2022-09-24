@@ -36,7 +36,7 @@ class Membership(models.Model):
 	def __str__(self):
 		return self.user.username
 	def slug(self):
-		return slugify("{} {}".format(self.plans.title,self.id))
+		return slugify("{self.plans.title} {self.id}".format(self=self))
 
 class Server(models.Model):
 	server_name = models.CharField(max_length=100, blank=False, null=False)
