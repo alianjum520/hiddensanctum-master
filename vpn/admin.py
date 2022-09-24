@@ -25,7 +25,7 @@ class MembershipAdmin(admin.ModelAdmin):
     search_fields =['user','subscription_date', 'expiration_data']
 
 class ServerAdmin(admin.ModelAdmin):
-    list_display =['server_name', 'region', 'hostname', 'server_username', 'flag_code', 'premium_server']
+    list_display =['server_name', 'region', 'hostname', 'server_username', 'flag_code', 'premium_server', 'created_at']
     list_filter=['flag_code', 'premium_server', 'region']
     list_per_page = 50
     search_fields = ['server_username', 'server_name']
