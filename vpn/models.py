@@ -1,3 +1,4 @@
+from enum import unique
 from django.db import models
 from django.contrib.auth.models import User
 from django.template.defaultfilters import slugify
@@ -12,7 +13,7 @@ class Plan(models.Model):
                                      null=True,
                                      blank=True,
                                      validators=[MaxValueValidator(12), MinValueValidator(1)])
-	#plan_duration_title = models.CharField(max_length=50, blank=False, null=False, default= "Free ")
+	plan_duration_title = models.CharField(max_length=50, blank=False, null=False, default= "Free ")
 	feature_one = models.CharField(max_length=100, null=True, blank=True)
 	feature_two = models.CharField(max_length=100, null=True, blank=True)
 	feature_three = models.CharField(max_length=100, null=True, blank=True)
@@ -22,6 +23,7 @@ class Plan(models.Model):
 
 	def __str__(self):
 		return self.title
+
 
 class Membership(models.Model):
 	user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -38,6 +40,7 @@ class Membership(models.Model):
 	def slug(self):
 		return slugify("{self.plans.title} {self.id}".format(self=self))
 
+
 class Server(models.Model):
 	server_name = models.CharField(max_length=100, blank=False, null=False)
 	region = models.CharField(max_length=10, blank=False, null=False)
@@ -50,3 +53,11 @@ class Server(models.Model):
 
 	def __str__(self):
 		return self.server_name
+
+
+class NewsLetter(models.Model):
+    email = models.EmailField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.email
