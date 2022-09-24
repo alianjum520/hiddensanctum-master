@@ -2,14 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
-from vpn.models import Server
-
-class UserSerializer(serializers.ModelSerializer):
-    """This serializer is used to get user and its details"""
-
-    class Meta:
-        model = User
-        fields = '__all__'
+from vpn.models import Server,Membership
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -44,7 +37,25 @@ class SignUpSerializer(serializers.ModelSerializer):
         return user
 
 
-class LoginUserSerializer(serializers.Serializer):
+class MembershipSerializer(serializers.ModelSerializer):
+    """This Serializer shows the membership of persons
+    against user that is being handled in User Serializer"""
+
+    class Meta:
+        model = Membership
+        fields = "__all__"
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """This serializer is used to get user and its details"""
+    membership = MembershipSerializer(read_only = True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'is_active', 'membership']
+
+
+class LoginUserSerializer(serializers.ModelSerializer):
     """
     This serializer defines two fields for authentication:
       * username
@@ -62,6 +73,9 @@ class LoginUserSerializer(serializers.Serializer):
         trim_whitespace=False,
         write_only=True
     )
+    class Meta:
+        model = User
+        fields = '__all__'
 
     def validate(self, attrs):
         # Take username and password from request
@@ -84,8 +98,11 @@ class LoginUserSerializer(serializers.Serializer):
         attrs['user'] = user
         return attrs
 
+
 class ServerSerializer(serializers.ModelSerializer):
+    """This serializer is used for server model"""
 
     class Meta:
         model = Server
         fields = "__all__"
+
