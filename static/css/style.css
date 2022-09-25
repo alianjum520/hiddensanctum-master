@@ -1833,6 +1833,10 @@ section {
 #footer .credits a {
   transition: 0.3s;
 }
+#checkout-btn{
+  position: relative;
+  left: 25%;
+}
 
 @media (max-width: 768px) {
   #footer .footer-bottom {
@@ -1848,6 +1852,13 @@ section {
 
   #footer .credits {
     padding-top: 4px;
+  }
+  #checkout-btn{
+    position: relative;
+    width: 50px;
+  }
+  #checkout-button{
+    width: 100px;
   }
 }
 
