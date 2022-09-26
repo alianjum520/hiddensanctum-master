@@ -81,7 +81,7 @@ def profile_management(request):
         'fname': fname,
         'email': email,
     }
-    return render(request, 'vpn/dashboard.html', context)
+    return render(request, 'vpn/profile.html', context)
 
 @login_required(login_url='sign-in')
 def checkout(request,pk):
