@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import NewsLetter, Plan,Membership,Server
+from .models import EmailToken, NewsLetter, Plan,Membership,Server
 
 # Register your models here.
 class PlanAdmin(admin.ModelAdmin):
@@ -39,3 +39,4 @@ admin.site.register(Plan, PlanAdmin)
 admin.site.register(Membership, MembershipAdmin)
 admin.site.register(Server, ServerAdmin)
 admin.site.register(NewsLetter, NewsLetterAdmin)
+admin.site.register(EmailToken)

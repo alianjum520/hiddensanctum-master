@@ -32,12 +32,13 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ['hiddensanctum.org','localhost','82.180.132.207','10.0.2.2', '127.0.0.1']
+ALLOWED_HOSTS = ['hiddensanctum.org','www.hiddensanctum.org','localhost','82.180.132.207','10.0.2.2', '127.0.0.1']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'admin_volt.apps.AdminVoltConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -57,6 +58,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+
 
 ROOT_URLCONF = 'hiddensanctum.urls'
 
@@ -123,13 +126,15 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
+STATIC_URL = '/staticfiles/'
+STATIC_ROOT = 'staticfiles'
 
-STATIC_URL = '/static/'
-MEDIA_URL = '/images/'
+# this is directory paths where you have to put your project level static files
+# you can put multiple folders here
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "static"),
+)
 
-STATICFILES_DIRS = [
-    BASE_DIR / 'static'
-]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -144,5 +149,12 @@ STRIPE_WEBHOOK_SECRET = env('STRIPE_WEBHOOK_SECRET')
 
 
 REST_FRAMEWORK = {
-    'DEFAULT_RENDERER_CLASSES':('rest_framework.renderers.JSONRenderer',)
+    'DEFAULT_RENDERER_CLASSES':('rest_framework.renderers.JSONRenderer',),
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = env('EMAIL_USE_TLS')
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_PORT = env('EMAIL_PORT')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')

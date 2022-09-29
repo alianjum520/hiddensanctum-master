@@ -13,7 +13,7 @@
       <h5 class="card-title">Hello {{fname}}</h5>
       <h6 class="card-subtitle mb-2 text-muted">{{email}}</h6>
       <a href="/" class="card-link">Home</a>
-      <a href="{% url 'pricing' %}" class="card-link">Buy another</a>
+      <a href="{% url 'pricing' %}" class="card-link">Upgrade Plan</a>
     </div>
   </div>
 </div>
@@ -24,6 +24,8 @@
         <tr>
           <th>Customer</th>
           <th>Plan</th>
+          <th>Paid Amount</th>
+          <th>Premium</th>
           <th>Starting on</th>
           <th>Expiring on</th>
         </tr>
@@ -36,7 +38,19 @@
                 <p class="mb-0 font-weight-medium"> {{fname}} </p>
               </div>
               <div class="table-user-name ml-3">
-                <p class="mb-0 font-weight-medium"> </p>
+                <p class="mb-0 font-weight-medium">{{membership.plans}}</p>
+              </div>
+              <div class="table-user-name ml-3">
+                <p class="mb-0 font-weight-medium">{{membership.plans.price}}</p>
+              </div>
+              <div class="table-user-name ml-3">
+                <p class="mb-0 font-weight-medium">{{membership.premium_membership}}</p>
+              </div>
+              <div class="table-user-name ml-3">
+                <p class="mb-0 font-weight-medium">{{membership.subscription_date}}</p>
+              </div>
+              <div class="table-user-name ml-3">
+                <p class="mb-0 font-weight-medium">{{membership.expiration_data}}</p>
               </div>
             </div>
         </td>
