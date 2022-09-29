@@ -2,8 +2,15 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.template.defaultfilters import slugify
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from vpn.api.utils import Util
+from datetime import date
+
+
 
 # Create your models here.
+User._meta.get_field('email')._unique = True
 
 class Plan(models.Model):
 	title = models.CharField(max_length=50, blank=False, null=False)
@@ -60,3 +67,40 @@ class NewsLetter(models.Model):
 
     def __str__(self):
         return self.email
+
+
+class EmailToken(models.Model):
+	user = models.OneToOneField(User, on_delete=models.CASCADE)
+	token = models.CharField(max_length=555)
+	expired  = models.BooleanField(default=False)
+	created_at = models.DateTimeField(auto_now_add=True)
+	expiration_time = models.DateTimeField(blank = True, null=True)
+
+
+	def __str__(self):
+		return self.token
+
+
+@receiver(post_save, sender=Membership)
+def MembershipUpdate(sender, created, instance, **kwargs):
+	print(date.today())
+	if instance.expiration_data == date.today():
+		instance.premium_membership = False
+		if instance.payment_completed == True:
+			instance.payment_completed = False
+			instance.save()
+
+
+@receiver(post_save, sender=Membership)
+def MembershipExpiration(sender, created, instance, **kwargs):
+
+	membership = Membership.objects.filter(premium_membership = False)
+	for expired_membership in membership:
+
+		email_body = 'Hi '+expired_membership.user.username + \
+					'Your Membership has been expired or Please Pay your Membership chargers to use premium services \n'
+
+		data = {'email_body': email_body, 'to_email': expired_membership.user.email,
+				'email_subject': 'Pay your Membership chargers'}
+		Util.send_email(data)
+

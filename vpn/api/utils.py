@@ -1,0 +1,23 @@
+from django.core.mail import EmailMessage
+import threading
+from django.conf import settings
+
+class EmailThread(threading.Thread):
+
+    def __init__(self, email):
+        self.email = email
+        threading.Thread.__init__(self)
+
+    def run(self):
+        self.email.send()
+
+
+class Util:
+    @staticmethod
+    def send_email(data):
+        email_from = settings.EMAIL_HOST_USER
+        email = EmailMessage(
+            subject=data['email_subject'], body=data['email_body'], from_email= email_from, to=[data['to_email']])
+        EmailThread(email).start()
+
+

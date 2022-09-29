@@ -77,11 +77,13 @@ def logoutUser(request):
 def profile_management(request):
     fname = request.user
     email = request.user.email
+    membership = Membership.objects.get(user = fname)
     context = {
         'fname': fname,
         'email': email,
+        'membership' : membership
     }
-    return render(request, 'vpn/dashboard.html', context)
+    return render(request, 'vpn/profile.html', context)
 
 @login_required(login_url='sign-in')
 def checkout(request,pk):
@@ -203,11 +205,11 @@ def my_webhook_view(request):
             print(session.payment_status)
             # Fulfill the purchase...
             fulfill_order(member_id)
+
         elif session.payment_status == "unpaid":
             line_item = session.list_line_items(session.id, limit=1).data[0]
             member_id = line_item['description']
             fail_payment(member_id)
-
     # Passed signature verification
     return HttpResponse(status=200)
 

@@ -1,9 +1,13 @@
+from genericpath import exists
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
 from vpn.models import Server,Membership
-
+from rest_framework.exceptions import AuthenticationFailed
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 
 class SignUpSerializer(serializers.ModelSerializer):
     """This serializer is used to register the user or signup the user"""
@@ -106,3 +110,41 @@ class ServerSerializer(serializers.ModelSerializer):
         model = Server
         fields = "__all__"
 
+
+class ChangePasswordSerializer(serializers.Serializer):
+    model = User
+
+    """
+    Serializer for password change endpoint.
+    """
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
+class ResetPasswordEmailRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(min_length=2) 
+
+    class Meta:
+        fields = ['email']
+
+
+class SetNewPasswordSerializer(serializers.Serializer):
+    username = serializers.CharField(
+        min_length=6, max_length=68, write_only=True)
+    password = serializers.CharField(
+        min_length=6, max_length=68, write_only=True)
+
+    class Meta:
+        fields = ['password']
+
+    def validate(self, attrs):
+        try:
+            username = attrs.get('username')
+            password = attrs.get('password')
+            user = User.objects.get(username=username)
+            user.set_password(password)
+            user.save()
+
+            return (user)
+        except Exception as e:
+            raise AuthenticationFailed('The reset link is invalid', 401)
+        return super().validate(attrs)
