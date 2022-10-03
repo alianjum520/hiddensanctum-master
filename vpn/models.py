@@ -30,6 +30,9 @@ class Plan(models.Model):
 	def __str__(self):
 		return self.title
 
+	def Amount(self):
+		return self.plans__price
+
 
 class Membership(models.Model):
 	user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -40,6 +43,7 @@ class Membership(models.Model):
 	cancel_membership = models.BooleanField(default=False)
 	subscription_date = models.DateField(null=True, blank=True)
 	expiration_data = models.DateField(null=True, blank=True)
+	created_at = models.DateTimeField(auto_now_add=True)
 
 	def __str__(self):
 		return self.user.username
@@ -81,6 +85,38 @@ class EmailToken(models.Model):
 		return self.token
 
 
+class Blog(models.Model):
+	title = models.CharField(max_length=300)
+	slug = models.SlugField(max_length=300)
+	image = models.ImageField(upload_to='blog_images/')
+	content = models.TextField()
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+
+	class Meta:
+		ordering = ['-created_at']
+
+	def __str__(self):
+		return self.title
+	def image_tag(self):
+		from django.utils.html import mark_safe
+		return mark_safe('<img src="{}" width="60" height="70" />'.format(self.image.url))
+	image_tag.short_description = 'Image'
+
+
+class Contact(models.Model):
+    name = models.CharField( max_length=200)
+    email = models.EmailField()
+    subject = models.CharField(max_length=300)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.name
+
+
+
+#signals created for updatinf model and sending mails
 @receiver(post_save, sender=Membership)
 def MembershipUpdate(sender, created, instance, **kwargs):
 	print(date.today())

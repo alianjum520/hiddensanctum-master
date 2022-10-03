@@ -1,0 +1,100 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+<br>
+<section id="pricing" class="pricing">
+    <div class="container" data-aos="fade-up">
+
+      <div class="row">
+        <div class="col-lg-12" data-aos="fade-up" data-aos-delay="100" style="text-align:center;">
+          <div >
+            <form id="checkout-btn">
+              <div class="section-title">
+                <h2>Sign Up</h2>
+              </div>
+              <style>
+                input[type=text] {
+                  width: 100%;
+                  box-sizing: border-box;
+                  border: 2px solid #ccc;
+                  border-radius: 25px;
+                  font-size: 16px;
+                  background-color: white;
+                  background-image: url('searchicon.png');
+                  background-position: 10px 10px; 
+                  background-repeat: no-repeat;
+                  padding: 12px 20px 12px 40px;
+                  margin: 8px;
+                  margin-left: auto;
+                  margin-right: auto;
+                }
+                input[type=email] {
+                  width: 100%;
+                  box-sizing: border-box;
+                  border: 2px solid #ccc;
+                  border-radius: 25px;
+                  font-size: 16px;
+                  background-color: white;
+                  background-image: url('searchicon.png');
+                  background-position: 10px 10px; 
+                  background-repeat: no-repeat;
+                  padding: 12px 20px 12px 40px;
+                  margin: 8px;
+                  margin-left: auto;
+                  margin-right: auto;
+                }
+                input[type=password] {
+                  width: 100%;
+                  box-sizing: border-box;
+                  border: 2px solid #ccc;
+                  border-radius: 25px;
+                  font-size: 16px;
+                  background-color: white;
+                  background-image: url('searchicon.png');
+                  background-position: 10px 10px; 
+                  background-repeat: no-repeat;
+                  padding: 12px 20px 12px 40px;
+                  margin: 8px;
+                  margin-left: auto;
+                  margin-right: auto;
+                }
+              </style>
+              <input  id="usr"  name="username" type="text" placeholder="username" required>
+              <input id="eml"  name="email" type="email" placeholder="email" required>
+              <input id="pwd" name="password" type="password" placeholder="password" required>
+              <input  id="pwd1"  name="password" type="password" placeholder="confirm password" required>
+    
+                <button style ="width: 100%; margin-left: auto; margin-right: auto;" type="submit" class="btn-solid">Sign Up</button>
+              </form>
+            <div>
+            <div>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+  </section>
+  <script>
+    const form = document.getElementById('checkout-btn');
+
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      const prepayload = new FormData(form);
+      const payload = new URLSearchParams(prepayload);
+      const json_data = JSON.stringify(payload)
+      console.log(json_data);
+      fetch('http://127.0.0.1:8000/api/sign-up/', {
+        method:"POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload),
+      })
+        .then(res => json())
+        .then(data => console.log(data))
+        .catch(err => console.log(err));
+    })
+  </script>
+  
+{% endblock content %}

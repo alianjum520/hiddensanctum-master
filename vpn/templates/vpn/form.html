@@ -11,13 +11,13 @@
           <h2 class="tit">Sign in</h2>
           <div class="input-field">
             <i class="bx bx-user"></i>
-            <input type="text" name="username" placeholder="Username" />
+            <input type="text" name="username" placeholder="Username" required/>
           </div>
           <div class="input-field">
             <i class="bx bx-lock"></i>
-            <input type="password" name="password" placeholder="Password" />
+            <input type="password" name="password" placeholder="Password" required/>
           </div>
-          <input type="submit" value="Login" class="btn-solid" />
+          <button  type="submit" class="btn-solid">Login</button>
           <p class="social-text">Follow us on social platforms</p>
           <div class="social-media">
             <a href="#" class="social-icon">
@@ -57,7 +57,7 @@
           <input id="pwd" class="input-field" name="password" type="password" placeholder="password" required>
           <input id="pwd1" class="input-field" name="password" type="password" placeholder="confirm password" required>
 
-            <button id="sign-up-button" type="submit" class="btn-solid">Sign Up</button>
+            <button   class="btn-solid">Sign Up</button>
           </form>
       </div>
     </div>
@@ -92,46 +92,12 @@
     </div>
   </div>
 <script>
-
-  $('#sign-up-button').click(function () {
-
-    let username = $('#usr').val();
-    let email = $('#eml').val();
-    let password = $('#pwd').val();
-    let password2 = $('#pwd2').val();
-
-    $.ajax({
-        type: 'POST',
-        dataType: 'json',
-        data: {
-            "username": username,
-            "email": email,
-            "password": password,
-            "password2": password2
-        },
-
-        url: "http://127.0.0.1:8000/api/sign-up/",
-        error: function (xhr, status, error) {
-
-            var err_msg = ''
-            for (var prop in xhr.responseJSON) {
-                err_msg += prop + ': ' + xhr.responseJSON[prop] + '\n';
-            }
-
-            alert(err_msg);
-        },
-        success: function (result) {
-
-            
-            alert('Data Saved Successfully.');
-
-            $('#usr').val("");
-            $('#eml').val("");
-            $('#pwd').val("");
-            $('#pwd1').val("");
-        }
-    });
-});
+  const form = document.getElementsByClassName('sign-up-form');
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    const payload = new FormData(form);
+    console.log([...payload])
+  })
 </script>
 
 {% endblock content %}
