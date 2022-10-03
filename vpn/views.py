@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, NewsLetterForm, ContactForm
 from .models import Plan, Membership
 from django.contrib.auth.models import User
 import stripe
@@ -17,6 +17,27 @@ from dateutil.relativedelta import relativedelta
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 # Create your views here.
+def news_letter_view(request):
+    form = NewsLetterForm()
+    if request.method == "POST":
+        form = NewsLetterForm(request.POST)
+        if form.is_valid():
+            form.save()
+    context ={
+        "form": form
+    }
+    return render(request,'main.html', context)
+
+def contact_view(request):
+    contact_form = ContactForm()
+    if request.method == "POST":
+        contact_form = ContactForm(request.POST)
+        if contact_form.is_valid():
+            contact_form.save()
+    context ={
+        "contact_form": contact_form
+    }
+    return render(request,'main.html', context)
 
 def index(request):
     return render(request, 'vpn/index.html')
@@ -65,7 +86,7 @@ def signup(request):
         else:
             messages.error(request, 'An error has occured during registration')
     context = {'form': form}
-    return render(request, 'vpn/form.html', context)
+    return render(request, 'vpn/signup.html', context)
 
 def logoutUser(request):
     logout(request)
@@ -93,8 +114,12 @@ def checkout(request,pk):
         plans = Plan.objects.get(id=pk)
         if plans.price != 0:
             try:
+                date_object = datetime.date.today()
+                month_after = date_object + relativedelta(months=+plans.plan_duration_months)
                 membership = Membership.objects.get(user = request.user)
                 membership.plans = plans
+                membership.subscription_date = date_object
+                membership.expiration_data = month_after
                 membership.save()
                 context = {
                     'plans':plans,
@@ -103,9 +128,13 @@ def checkout(request,pk):
                 return render(request, 'vpn/checkout_view.html', context)
 
             except Membership.DoesNotExist:
+                date_object = datetime.date.today()
+                month_after = date_object + relativedelta(months=+plans.plan_duration_months)
                 membership = Membership.objects.create(
                 user = request.user,
-                plans = plans
+                plans = plans,
+                subscription_date = date_object,
+                expiration_data = month_after
                 )
                 context = {
                     'plans':plans,
@@ -169,6 +198,7 @@ class CreateCheckoutSession(View):
 def payment_succes(request):
     """After the payment is successfully done user will redirected to success page"""
 
+    
     return render(request,'vpn/success.html')
 
 
@@ -184,7 +214,8 @@ endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
 def my_webhook_view(request):
     """Stripe Webhook used"""
     payload = request.body
-    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+    sig_header = request.headers['STRIPE_SIGNATURE']
+    print(sig_header)
     event = None
     try:
         event = stripe.Webhook.construct_event(
@@ -192,10 +223,10 @@ def my_webhook_view(request):
         )
     except ValueError as e:
         # Invalid payload
-        return HttpResponse(status=400)
+        return HttpResponse(e,status=400)
     except stripe.error.SignatureVerificationError as e:
         # Invalid signature
-        return HttpResponse(status=400)
+        return HttpResponse(e,status=400)
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
         if session.payment_status == "paid":
@@ -205,11 +236,11 @@ def my_webhook_view(request):
             print(session.payment_status)
             # Fulfill the purchase...
             fulfill_order(member_id)
-
         elif session.payment_status == "unpaid":
             line_item = session.list_line_items(session.id, limit=1).data[0]
             member_id = line_item['description']
             fail_payment(member_id)
+
     # Passed signature verification
     return HttpResponse(status=200)
 
@@ -233,3 +264,95 @@ def fail_payment(member_id):
     """
     membership =Membership.objects.get(sluged = member_id)
     membership.delete()
+
+'''def stripe_balance(request):
+    report  = stripe.BalanceTransaction.list(limit=3)
+    print(report)'''
+
+#All the chart section code will be as followed
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db.models import  F, Sum, Avg
+from django.db.models.functions import ExtractYear, ExtractMonth
+from django.http import JsonResponse
+from vpn.api.utils import months, colorPrimary, colorSuccess, colorDanger, generate_color_palette, get_year_dict
+
+
+@staff_member_required
+def get_filter_options(request):
+    grouped_memberships = Membership.objects.annotate(year=ExtractYear('subscription_date')).values('year').order_by('-year').distinct()
+    options = [membership['year'] for membership in grouped_memberships]
+
+    return JsonResponse({
+        'options': options,
+    })
+
+
+@staff_member_required
+def get_sales_chart(request, year):
+    memberships = Membership.objects.filter(subscription_date__year=year)
+    grouped_purchases = memberships.annotate(price=F('plans__price')).annotate(month=ExtractMonth('subscription_date'))\
+        .values('month').annotate(average=Sum('plans__price')).values('month', 'average').order_by('month')
+
+    sales_dict = get_year_dict()
+
+    for group in grouped_purchases:
+        sales_dict[months[group['month']-1]] = round(group['average'], 2)
+
+    return JsonResponse({
+        'title': f'Sales in {year}',
+        'data': {
+            'labels': list(sales_dict.keys()),
+            'datasets': [{
+                'label': 'Gross Amount ($)',
+                'backgroundColor': colorPrimary,
+                'borderColor': colorPrimary,
+                'data': list(sales_dict.values()),
+            }]
+        },
+    })
+
+@staff_member_required
+def spend_per_customer_chart(request, year):
+    purchases = Membership.objects.filter(subscription_date__year=year)
+    grouped_purchases = purchases.annotate(price=F('plans__price')).annotate(month=ExtractMonth('subscription_date'))\
+        .values('month').annotate(average=Avg('plans__price')).values('month', 'average').order_by('month')
+
+    spend_per_customer_dict = get_year_dict()
+
+    for group in grouped_purchases:
+        spend_per_customer_dict[months[group['month']-1]] = round(group['average'], 2)
+
+    return JsonResponse({
+        'title': f'Spend per customer in {year}',
+        'data': {
+            'labels': list(spend_per_customer_dict.keys()),
+            'datasets': [{
+                'label': 'Amount ($)',
+                'backgroundColor': colorPrimary,
+                'borderColor': colorPrimary,
+                'data': list(spend_per_customer_dict.values()),
+            }]
+        },
+    })
+
+
+@staff_member_required
+def payment_success_chart(request, year):
+    membership = Membership.objects.filter(subscription_date__year=year)
+
+    return JsonResponse({
+        'title': f'Payment success rate in {year}',
+        'data': {
+            'labels': ['Successful', 'Unsuccessful'],
+            'datasets': [{
+                'label': 'Amount ($)',
+                'backgroundColor': [colorSuccess, colorDanger],
+                'borderColor': [colorSuccess, colorDanger],
+                'data': [
+                    membership.filter(payment_completed=True).count(),
+                    membership.filter(payment_completed=False).count(),
+                ],
+            }]
+        },
+    })
+

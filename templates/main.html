@@ -33,6 +33,7 @@
     <link rel="stylesheet" href="{% static '/css/checkout.css' %}" />
     <script src="https://js.stripe.com/v3/"></script>
     <script src="https://polyfill.io/v3/polyfill.min.js?version=3.52.1&features=fetch"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
 
 </head>
 
@@ -78,8 +79,10 @@
           <div class="col-lg-6">
             <h4>Join Our Newsletter</h4>
             <p>Tamen quem nulla quae legam multos aute sint culpa legam noster magna</p>
-            <form action="" method="post">
-              <input type="email" name="email"><input type="submit" value="Subscribe">
+            <form action="{% url 'newsletter' %}" method="post">
+              {% csrf_token %}
+              <input type="email" name="email">
+              <input type="submit" value="Subscribe">
             </form>
           </div>
         </div>

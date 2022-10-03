@@ -1,13 +1,10 @@
-from genericpath import exists
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
-from vpn.models import Server,Membership
+from vpn.models import Server,Membership, Blog
 from rest_framework.exceptions import AuthenticationFailed
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.encoding import force_str
-from django.utils.http import urlsafe_base64_decode
+
 
 class SignUpSerializer(serializers.ModelSerializer):
     """This serializer is used to register the user or signup the user"""

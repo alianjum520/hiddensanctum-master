@@ -1,0 +1,33 @@
+VirtualHost *:80>
+    ServerAdmin webmaster@localhost
+    ServerName hiddensanctum.org
+    ServerAlias www.hiddensanctum.org
+    DocumentRoot /var/www/hiddensanctum.org
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+RewriteEngine on
+RewriteCond %{SERVER_NAME} =www.hiddensanctum.org [OR]
+RewriteCond %{SERVER_NAME} =hiddensanctum.org
+RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
+   Alias /static /var/www/hiddensanctum.org/hiddensanctum-master/static
+   <Directory /var/www/hiddensanctum.org/hiddensanctum-master/static>
+            Require all granted
+   </Directory>
+    Alias /staticfiles /var/www/hiddensanctum.org/hiddensanctum-master/staticfiles
+   <Directory /var/www/hiddensanctum.org/hiddensanctum-master/staticfiles>
+            Require all granted
+   </Directory>
+
+
+        <Directory /var/www/hiddensanctum.org/hiddensanctum-master/hiddensanctum>
+                <Files wsgi.py>
+                        Require all granted
+                </Files>
+        </Directory>
+
+
+        WSGIDaemonProcess hiddensanctum.org python-path=/var/www/hiddensanctum.org/hiddensanctum-master/venv
+        WSGIProcessGroup hiddensanctum.org
+        WSGIScriptAlias / /var/www/hiddensanctum.org/hiddensanctum-master/hiddensanctum/wsgi.py
+</VirtualHost>
+
